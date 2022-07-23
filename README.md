@@ -22,7 +22,7 @@ You can install necessary libraries by running following commands.
 pip install -e .
 ```
 
-Then, you can see how to make lunar simulated environments by running "scripts/create_map.py".
+Then, you can see how to make lunar simulated environments by running `scripts/create_map.py`.
 2.5 and 2D colored images with height information can be seen as follows.
  
 # TODO
