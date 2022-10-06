@@ -3,53 +3,46 @@ description: a class to generate lunar surface topographic map.
 author: Masafumi Endo
 """
 
-import dataclasses
-from cmath import sqrt
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from scipy import fftpack
 
-@dataclasses.dataclass
-class Data:
-    """
-    structure containing data for map
-
-    :param height: terrain height
-    """
-    height: np.array = None
+from env.utils import Data
 
 class GridMap:
 
-    def __init__(self, n: int, res: float, n_tf: int = 2, re: float = 0.8, sigma: float = 10, seed: int = 0):
+    def __init__(self, param, seed: int = 0):
         """
         __init__:
 
         :param n: # of grid in one axis
         :param res: grid resolution [m]
-        :param n_tf: # of terrain features, such as height and terrain class information
         :param re: roughness exponent for fractal surface (0 < re < 1)
         :param sigma: amplitude gain for fractal surface
         :param seed: random seed 
         """
-        self.n = n
-        self.res = res
+        # set given parameters
+        self.param = param
+        self.n = self.param.n
+        self.res = self.param.res
+        self.re = self.param.re
+        self.sigma = self.param.sigma
+        # identify center and lower left positions
         self.c_x = self.n * self.res / 2.0
         self.c_y = self.n * self.res / 2.0
         self.lower_left_x = self.c_x - self.n / 2.0 * self.res
         self.lower_left_y = self.c_y - self.n / 2.0 * self.res
 
         # generate data array
-        self.n_tf = n_tf
         self.num_grid = self.n**2
         self.data = Data(height=np.zeros(self.num_grid))
 
-        # for fractal surface
-        self.re = re
-        self.sigma = sigma
-
-        # fix randomness
+        # set randomness
         self.seed = seed
         self.set_randomness()
 
@@ -199,7 +192,7 @@ class GridMap:
 
         """
         for c, r, in zip(c_arr, r_arr):
-            dist_c = sqrt((c[0] - c_t[0, 0])**2 + (c[1] - c_t[0, 1])**2)
+            dist_c = np.sqrt((c[0] - c_t[0, 0])**2 + (c[1] - c_t[0, 1])**2)
             sum_r = r + r_t
             if dist_c < sum_r:
                 return True
