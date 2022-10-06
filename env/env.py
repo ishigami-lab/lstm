@@ -3,12 +3,22 @@ description: a class to generate lunar surface topographic map.
 author: Masafumi Endo
 """
 
+import dataclasses
 from cmath import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from scipy import fftpack
+
+@dataclasses.dataclass
+class Data:
+    """
+    structure containing data for map
+
+    :param height: terrain height
+    """
+    height: np.array = None
 
 class GridMap:
 
@@ -33,14 +43,11 @@ class GridMap:
         # generate data array
         self.n_tf = n_tf
         self.num_grid = self.n**2
-        self.data = np.zeros((self.n_tf, self.num_grid)) # #0: height, #1: terrain_class
+        self.data = Data(height=np.zeros(self.num_grid))
 
         # for fractal surface
         self.re = re
         self.sigma = sigma
-
-        # for heterogeneous terrain features
-        self.occ = None
 
         # fix randomness
         self.seed = seed
@@ -57,7 +64,7 @@ class GridMap:
             self.rng = np.random.default_rng()
 
     # following functions are used for basic operations
-    def get_value_from_xy_id(self, x_id: int, y_id: int, i_tf: int = 0):
+    def get_value_from_xy_id(self, x_id: int, y_id: int, field_name: str = "height"):
         """
         get_value_from_xy_id: get values at specified location described as x- and y-axis indices from data structure
 
@@ -68,7 +75,8 @@ class GridMap:
         grid_id = self.calc_grid_id_from_xy_id(x_id, y_id)
 
         if 0 <= grid_id < self.num_grid:
-            return self.data[i_tf, grid_id]
+            data = getattr(self.data, field_name)
+            return data[grid_id]
         else:
             return None
 
@@ -124,7 +132,7 @@ class GridMap:
 
         return flag
 
-    def set_value_from_xy_id(self, x_id: int, y_id: int, val: float, i_tf: int = 0, is_increment: bool = True):
+    def set_value_from_xy_id(self, x_id: int, y_id: int, val: float, field_name: str = "height", is_increment: bool = True):
         """
         set_value_from_xy_id: substitute given arbitrary values into data structure at specified x- and y-axis indices
 
@@ -140,10 +148,12 @@ class GridMap:
         grid_id = int(y_id * self.n + x_id)
 
         if 0 <= grid_id < self.num_grid:
+            data = getattr(self.data, field_name)
             if is_increment:
-                self.data[i_tf, grid_id] += val
+                data[grid_id] += val
             else:
-                self.data[i_tf, grid_id] = val
+                data[grid_id] = val
+                setattr(self.data, field_name, data)
             return True
         else:
             return False
@@ -181,7 +191,7 @@ class GridMap:
                         i += 1
         if is_fractal:
             self.set_fractal_surf()
-        self.data[0, :] = self.set_offset(self.data[0, :])
+        self.data.height = self.set_offset(self.data.height)
 
     def check_circle_hit(self, c_arr: np.ndarray, r_arr: np.ndarray, c_t: np.ndarray, r_t: np.ndarray):
         """
@@ -203,7 +213,7 @@ class GridMap:
         z = self.generate_fractal_surf()
         # set offset
         z = self.set_offset(np.ravel(z))
-        self.data[0, :] += z
+        self.data.height += z
 
     def set_crater(self, c_xy: np.ndarray, angles: np.ndarray, ranges: np.ndarray):
         """
@@ -312,15 +322,13 @@ class GridMap:
 
         return z
 
-    def extend_data(self, data: np.array):
+    def extend_data(self, data: np.array, field_name):
         """
         extend_data: extend self.data in case additional terrain features are necessary
 
         :param data: appended data array
         """
-        assert self.data.shape[1] == data.shape[0], 'expected data size: {0}, given data size: {1}'.format(self.data.shape[1], data.shape[0])
-        self.data = np.vstack([self.data, data])
-        self.n_tf += 1
+        setattr(self.data, field_name, data)
 
     # following functions are used for visualization objective
     def print_grid_map_info(self):
@@ -347,7 +355,7 @@ class GridMap:
         plt.tight_layout()
         return ax_2d, ax_3d
 
-    def plot_2d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111, i_tf: int = 0, 
+    def plot_2d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111, field_name: str = "height", 
                     title: str = "2D celestial terrain", cmap: str = "jet", label: str = "height m"):
         """
         plot_2d_map: plot 2D grid map
@@ -362,8 +370,8 @@ class GridMap:
                              np.arange(0.0, self.n * self.res, self.res))
 
         if grid_data is None:
-            grid_data = np.reshape(self.data[i_tf, :], (self.n, self.n))
-            data = self.data[i_tf, :]
+            grid_data = np.reshape(getattr(self.data, field_name), (self.n, self.n))
+            data = getattr(self.data, field_name)
         else:
             data = np.reshape(grid_data, -1)
         if not fig:
@@ -396,8 +404,8 @@ class GridMap:
                              np.arange(0.0, self.n * self.res, self.res))
 
         if grid_data is None:
-            grid_data = np.reshape(self.data[0, :], (self.n, self.n))
-            data = self.data[0, :]
+            grid_data = np.reshape(self.data.height, (self.n, self.n))
+            data = self.data.height
         else:
             data = np.reshape(grid_data, -1)
         if not fig:
