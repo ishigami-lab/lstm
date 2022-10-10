@@ -16,6 +16,23 @@ class Data:
     height: np.array = None
 
 @dataclasses.dataclass
+class CraterProp:
+    """
+    structure containing crater property
+
+    :param distribution: crater distribution ("random" and "single")
+    :param geometry: geometry type from "normal", "mound", "flat", and "concentric"
+    :param num_crater: number of crater
+    :param min_range: minimum crater range
+    :param max_range: maximum crater range
+    """
+    distribution: str = None
+    geometry: str = None
+    num_crater: int = None
+    min_D: float = None
+    max_D: float = None
+
+@dataclasses.dataclass
 class Param:
     """
     structure containing parameters for map
@@ -29,3 +46,6 @@ class Param:
     res: float = None
     re: float = None
     sigma: float = None
+    is_fractal: bool = None
+    is_crater: bool = None
+    crater_prop: any = None
