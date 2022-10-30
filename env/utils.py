@@ -41,6 +41,9 @@ class Param:
     :param res: grid resolution [m]
     :param re: roughness exponent for fractal surface (0 < re < 1)
     :param sigma: amplitude gain for fractal surface
+    :param is_fractal: choose to apply fractal surface
+    :param is_crater: choose to apply crater shape
+    :param crater_prop: crater property denoted as "CraterProp" data structure
     """
     n: int = None
     res: float = None

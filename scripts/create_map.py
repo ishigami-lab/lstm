@@ -1,7 +1,8 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import matplotlib.pyplot as plt
+
+# import original structures and classes
 from env.env import GridMap
 from env.utils import CraterProp, Param
 
