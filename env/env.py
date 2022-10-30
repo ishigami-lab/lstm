@@ -424,7 +424,6 @@ class GridMap:
         plot_maps: plot 2D and 2.5D figures with given size
 
         :param figsize: size of figure
-        :param is_tf: existence of terrain features
         """
         sns.set()
         sns.set_style('whitegrid')
@@ -434,15 +433,16 @@ class GridMap:
         plt.tight_layout()
 
     def plot_2d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111, field_name: str = "height", 
-                    title: str = "2D celestial terrain", cmap: str = "jet", label: str = "height m"):
+                    cmap: str = "jet", label: str = "height m"):
         """
         plot_2d_map: plot 2D grid map
 
         :param grid_data: data to visualize
         :param fig: figure
         :param rc: position specification as rows and columns
-        :param i_tf: index of terrain features
-        :param title: title of shown figure
+        :param field_name: name of fields
+        :param cmap: color map spec
+        :param label: label of color map
         """
         xx, yy = np.meshgrid(np.arange(0.0, self.param.n * self.param.res, self.param.res),
                              np.arange(0.0, self.param.n * self.param.res, self.param.res))
@@ -475,7 +475,6 @@ class GridMap:
         :param grid_data: data to visualize
         :param fig: figure
         :param rc: position specification as rows and columns
-        :param is_tf: existence of terrain features
         """
         xx, yy = np.meshgrid(np.arange(0.0, self.param.n * self.param.res, self.param.res),
                              np.arange(0.0, self.param.n * self.param.res, self.param.res))
