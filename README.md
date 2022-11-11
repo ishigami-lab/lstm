@@ -29,9 +29,8 @@ Then, you can see how to make lunar simulated environments by running `scripts/c
  
 # TODO
 
-* Craters will be arranged based on actual lunar surface.
 * Terrain randomness will be implemented considering the actual lunar terrain surface.
-* Rock distribution will be implemented if possible.
+* Crater distribution will be implemented according to the actual lunar terrain surface.
  
 # Author
  
