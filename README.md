@@ -29,8 +29,8 @@ Then, you can see how to make lunar simulated environments by running `scripts/c
  
 # TODO
 
-* Current version utilizes just cone shapes as crater inner-rim. I will polish crater generation procedure to simulate more realistic ones.
-* Terrain randomness should be implemented considering the actual lunar terrain surface.
+* Terrain randomness will be implemented considering the actual lunar terrain surface.
+* Crater distribution will be implemented according to the actual lunar terrain surface.
  
 # Author
  
