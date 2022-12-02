@@ -29,39 +29,46 @@ class SurfaceModel(GridMap):
                 self.set_crater(c_xy=c_xy_, D=D)
             elif self.crater_prop.distribution == "random":
                 i = 0
-                while i < self.crater_prop.num_crater:
+                if self.crater_prop.con_D is not None:
+                    num_crater = self.calculate_num_crater(D=self.crater_prop.con_D)
+                else:
+                    num_crater = self.calculate_num_crater(D=self.crater_prop.max_D)
+                while i < num_crater:
                     c_xy_ = self.rng.integers(self.lower_left_x, (self.param.n - 1) * self.param.res, 2).reshape(1, 2)
-                    D = self.rng.integers(self.crater_prop.min_D, self.crater_prop.max_D)
+                    if self.crater_prop.con_D is not None:
+                        D = self.crater_prop.con_D
+                    else:
+                        D = self.rng.integers(self.crater_prop.min_D, self.crater_prop.max_D)
                     if i == 0:
                         self.set_crater(c_xy=c_xy_, D=D)
                         # init array for checking circle hit
                         c_arr = c_xy_
-                        r_arr = np.array([D])
+                        d_arr = np.array([D])
                         i += 1
                     else:
-                        is_hit = self.check_circle_hit(c_arr, r_arr, c_xy_, D)
+                        is_hit = self.check_circle_hit(c_arr, d_arr, c_xy_, D)
                         if not is_hit:
                             self.set_crater(c_xy=c_xy_, D=D)
                             c_arr = np.append(c_arr, c_xy_, axis=0)
-                            r_arr = np.append(r_arr, D)
+                            d_arr = np.append(d_arr, D)
                             i += 1
         if self.param.is_fractal:
             self.set_fractal_surf()
         self.data.height = self.set_offset(self.data.height)
 
-    def check_circle_hit(self, c_arr: np.ndarray, r_arr: np.ndarray, c_t: np.ndarray, r_t: np.ndarray):
+    def check_circle_hit(self, c_arr: np.ndarray, d_arr: np.ndarray, c_t: np.ndarray, d_t: np.ndarray):
         """
         check_circle_hit: check whether given craters are overlapped or not
         
         :param c_arr: center positions of generated craters so far
-        :param r_arr: radius information of generated creaters so far
+        :param d_arr: diameter information of generated creaters so far
         :param c_t: center position of newly generated crater
-        :param r_t: radius information of newly generated crater
+        :param d_t: diameter information of newly generated crater
         """
-        for c, r, in zip(c_arr, r_arr):
+        for c, d, in zip(c_arr, d_arr):
             dist_c = np.sqrt((c[0] - c_t[0, 0])**2 + (c[1] - c_t[0, 1])**2)
-            sum_r = r + r_t
-            if dist_c < sum_r:
+            sum_d = (d + d_t)
+            if dist_c < sum_d:
                 return True
         return False
         
@@ -182,7 +189,7 @@ class SurfaceModel(GridMap):
         normal_model: normal crater model
 
         :param r: input variable
-        :param D: radius
+        :param D: diameter
         """
         d0 = 0.114 * D**(-0.002)
         hr = 0.02513 * D**(-0.0757)
@@ -202,7 +209,7 @@ class SurfaceModel(GridMap):
         central_mound_crater_model: central mound crater model
 
         :param r: input variable
-        :param D: radius
+        :param D: diameter
         """
         d0 = 0.114 * D**(-0.002)
         hr = 0.02513 * D**(-0.0757)
@@ -230,7 +237,7 @@ class SurfaceModel(GridMap):
         flat_bottomed_crater_model: flat-bottomed crater model
 
         :param r: input variable
-        :param D: radius
+        :param D: diameter
         """
         d0 = 0.114 * D**(-0.002)
         hr = 0.02513 * D**(-0.0757)
@@ -254,7 +261,7 @@ class SurfaceModel(GridMap):
         concentric_crater_model: concentric crater model
 
         :param r: input variable
-        :param D: radius
+        :param D: diameter
         """
         d0 = 0.114 * D**(-0.002)
         hr = 0.02513 * D**(-0.0757)
@@ -280,3 +287,17 @@ class SurfaceModel(GridMap):
         else:
             h = hr * (r**alpha - 1)
         return h
+
+    def calculate_num_crater(self, D: float, a: float = 1.54, b: float = - 2):
+        """
+        calculate_num_crater: calculate number of craters based on analytical model
+
+        :param D: diameter
+        :param a: coefficient of the function
+        :param b: coefficient of the function
+        """
+        density = a * D**b
+        area_t = (self.param.n * self.param.res)**2
+        area_c = (D / 2)**2 * np.pi
+        num_crater = int((area_t) * density / area_c)
+        return num_crater

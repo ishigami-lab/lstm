@@ -236,6 +236,6 @@ class GridMap:
         ax.set_box_aspect((1, 1, 0.35))
         ax.set_xlim(xx.min(), xx.max() + self.param.res)
         ax.set_ylim(yy.min(), yy.max() + self.param.res)
-        ax.set_zlim(min(data), xx.max() / 20)
+        ax.set_zlim(min(data), xx.max() / 25)
 
         return hmap, ax
