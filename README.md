@@ -26,11 +26,16 @@ Then, you can see how to make lunar simulated environments by running `scripts/c
 2.5 and 2D colored images with height information can be seen as follows.
 
 ![](examples/lstm_example.png)
+
+# How good?
+* The crater shape follows analytical models.
+* The crater frequency follows analytical models.
+* The crater size distribution will follow analytical models.
  
 # TODO
 
 * Terrain randomness will be implemented considering the actual lunar terrain surface.
-* Crater distribution will be implemented according to the actual lunar terrain surface.
+* Crater size distribution will be implemented according to the actual lunar terrain surface.
  
 # Author
  
