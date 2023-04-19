@@ -24,6 +24,7 @@ pip install -e .
 
 Then, you can see how to make lunar simulated environments by running `scripts/create_map.py`.
 2.5 and 2D colored images with height information can be seen as follows.
+If you would like to know more about class functionalities or parameter effects, please try `tutorial.ipynb`! 
 
 ![](examples/lstm_example.png)
 
