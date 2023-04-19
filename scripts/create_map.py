@@ -3,7 +3,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import matplotlib.pyplot as plt
 
 # import original structures and classes
-from env.env import GridMap
 from env.utils import CraterProp, Param
 from env.surface_model import SurfaceModel
 
@@ -12,9 +11,9 @@ def main():
 
     crater_prop = CraterProp(distribution="random",
                             geometry="normal",
-                            num_crater=50,
                             min_D=5,
-                            max_D=10)
+                            max_D=10,
+                            con_D=5)
 
     param = Param(n=200,
                 res=1,
