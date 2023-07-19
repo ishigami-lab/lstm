@@ -14,6 +14,7 @@ class Data:
     :param height: terrain height
     """
     height: np.array = None
+    color: np.array = None
 
 @dataclasses.dataclass
 class CraterProp:

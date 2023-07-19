@@ -158,7 +158,7 @@ class GridMap:
         print("resolution: ", self.param.res, " [m]")
         print("# of data: ", self.param.num_grid)
 
-    def plot_maps(self, figsize: tuple = (10, 4)):
+    def plot_maps(self, figsize: tuple = (10, 4), field_name: str = "height"):
         """
         plot_maps: plot 2D and 2.5D figures with given size
 
@@ -167,8 +167,8 @@ class GridMap:
         sns.set()
         sns.set_style('whitegrid')
         fig = plt.figure(figsize=figsize)
-        _, ax_3d = self.plot_3d_map(fig=fig, rc=121)
-        _, ax_2d = self.plot_2d_map(fig=fig, rc=122)
+        _, ax_3d = self.plot_3d_map(fig=fig, rc=121, field_name=field_name)
+        _, ax_2d = self.plot_2d_map(fig=fig, rc=122, field_name=field_name)
         plt.tight_layout()
 
     def plot_2d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111, field_name: str = "height", 
@@ -187,7 +187,11 @@ class GridMap:
                              np.arange(0.0, self.param.n * self.param.res, self.param.res))
 
         if grid_data is None:
-            grid_data = np.reshape(getattr(self.data, field_name), (self.param.n, self.param.n))
+            data = getattr(self.data, field_name)
+            if field_name == "height":
+                grid_data = np.reshape(data, (self.param.n, self.param.n))
+            elif field_name == "color":
+                grid_data = data
             data = getattr(self.data, field_name)
         else:
             data = np.reshape(grid_data, -1)
@@ -195,19 +199,22 @@ class GridMap:
             fig = plt.figure()
 
         ax = fig.add_subplot(rc)
-        hmap = ax.pcolormesh(xx + self.param.res / 2.0, yy + self.param.res / 2.0, grid_data,
-                             cmap=cmap, vmin=min(data), vmax=max(data))
+        if field_name == "height":
+            hmap = ax.pcolormesh(xx + self.param.res / 2.0, yy + self.param.res / 2.0, grid_data,
+                                cmap=cmap, vmin=min(data), vmax=max(data))
+            ax.set_xlim(xx.min(), xx.max() + self.param.res)
+            ax.set_ylim(yy.min(), yy.max() + self.param.res)
+            plt.colorbar(hmap, ax=ax, label=label, orientation='vertical')
+        elif field_name == "color":
+            hmap = ax.imshow(grid_data, origin='lower')
+            ax.grid(False)
         ax.set_xlabel("x-axis m")
         ax.set_ylabel("y-axis m")
         ax.set_aspect("equal")
-        ax.set_xlim(xx.min(), xx.max() + self.param.res)
-        ax.set_ylim(yy.min(), yy.max() + self.param.res)
-
-        plt.colorbar(hmap, ax=ax, label=label, orientation='vertical')
 
         return hmap, ax
 
-    def plot_3d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111):
+    def plot_3d_map(self, grid_data: np.ndarray = None, fig: plt.figure = None, rc: int = 111, field_name: str = "height"):
         """
         plot_3d_map: plot 2.5D grid map
 
@@ -227,8 +234,12 @@ class GridMap:
             fig = plt.figure()
 
         ax = fig.add_subplot(rc, projection="3d")
-        hmap = ax.plot_surface(xx + self.param.res / 2.0, yy + self.param.res / 2.0, grid_data, rstride=1, cstride=1,
-                            cmap="jet", vmin=min(data), vmax=max(data), linewidth=0, antialiased=False)
+        if field_name == "height":
+            hmap = ax.plot_surface(xx + self.param.res / 2.0, yy + self.param.res / 2.0, grid_data, rstride=1, cstride=1,
+                                cmap="jet", vmin=min(data), vmax=max(data), linewidth=0, antialiased=False)
+        elif field_name == "color":
+            hmap = ax.plot_surface(xx + self.param.res / 2.0, yy + self.param.res / 2.0, grid_data, rstride=1, cstride=1,
+                                facecolors=self.data.color, linewidth=0, antialiased=False)
         ax.set_xlabel("x-axis m")
         ax.set_ylabel("y-axis m")
         ax.set_zticks(np.arange(xx.min(), xx.max(), 10))

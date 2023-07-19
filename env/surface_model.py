@@ -184,6 +184,48 @@ class SurfaceModel(GridMap):
         zz *= D
         return zz
 
+    def generate_RGB_info(self, t, t_upper):
+        """
+        generate_RGB_info: generate RGB information including terrain appearance with shading condition
+
+        """
+        self.data.color = np.full((self.param.n, self.param.n, 3), 0.8)
+        self.create_shading(t, t_upper)
+
+    def create_shading(self, t: float, t_upper: float = 1, ambient: float = 0.1):
+        """
+        create_shading: create shading effect using color and height information
+
+        """
+        # get relevant data from the data structure
+        height = np.reshape(self.data.height, (self.param.n, self.param.n))
+        color = self.data.color.transpose(2, 0, 1).astype(np.float32)
+        # calculate normal vector
+        dx = height[:, :-1] - height[:, 1:]
+        dy = height[:-1, :] - height[1:, :]
+        norm = np.zeros((1, 3, self.param.n, self.param.n))
+        norm[:, 0, :, :-1] += dx
+        norm[:, 0, :, 1:] += dx
+        norm[:, 0, :, 1:-1] /= 2
+        norm[:, 1, :-1, :] += dy
+        norm[:, 1, 1:, :] += dy
+        norm[:, 1, 1:-1, :] /= 2
+        norm[:, 2] = 1
+        norm /= (norm * norm).sum(axis=1, keepdims=True)**(0.5)
+        # generate light source vector
+        theta = self.rng.random() * (2 * np.pi)
+        z = self.rng.random() * (t_upper - t) + t
+        r = (1 - z * z)**(0.5)
+        l = np.zeros((1, 3))
+        l[:, 0] = r * np.cos(theta)
+        l[:, 1] = r * np.sin(theta)
+        l[:, 2] = z
+        # cast shading to color image
+        shade = (l[:, :, None, None] * norm).sum(axis=1, keepdims=True)
+        shade = np.clip(shade, 0, None) * np.expand_dims(color, 0)
+        shade += np.expand_dims(color, 0) * ambient
+        self.data.color = np.squeeze(shade).transpose(1, 2, 0)
+
     def normal_model(self, r, D):
         """
         normal_model: normal crater model
